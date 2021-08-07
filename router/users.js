@@ -262,14 +262,18 @@ router.get("/friends", async (req, res) => {
 
 router.get("/groups", async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    const groups = await Promise.all(
-      user.groups.map(async (groupId) => {
-        return await Group.findById(groupId);
-      })
-    );
-    if (groups.length > 0) res.status(200).json(groups);
-    else res.status(200).json([{ name: "no name" }]);
+    const groups = await Group.find({ members: { $in: [req.user.id] } });
+    if (groups.length > 0)
+      res
+        .status(200)
+        .json([
+          { name: "Default", dics: "for public chat", _id: "2" },
+          ...groups,
+        ]);
+    else
+      res
+        .status(200)
+        .json([{ name: "Default", dics: "for public chat", _id: "2" }]);
   } catch (err) {
     res.status(500).json(err);
   }

@@ -14,12 +14,13 @@ router.post("/", async (req, res) => {
     try {
       const newMessage = await new GroupMessage({
         sender: req.body.sender,
-        groupName: req.body.groupName,
+        groupId: req.body.groupId,
         message: ciphertext,
+        createdAt: req.body.createdAt,
       });
 
       const message = await newMessage.save();
-      res.status(200).json(message);
+      res.status(200).json({ ...message._doc, message: req.body.message });
     } catch (err) {
       res.status(500).json(err);
     }
@@ -29,21 +30,6 @@ router.post("/", async (req, res) => {
 });
 
 // PUT
-
-router.put("/seen/:messageId", async (req, res) => {
-  try {
-    const message = await GroupMessage.findById(req.params.messageId);
-    if (message.sender !== req.user.id) {
-      await message.updateOne({ $set: { seen: req.body.seen } });
-      res.status(200).json(message);
-    } else {
-      res.status(404).json("You can't update this message");
-    }
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
 router.put("/delme/:messageId", async (req, res) => {
   try {
     const message = await GroupMessage.findById(req.params.messageId);
@@ -94,18 +80,34 @@ router.put("/delall/:messageId", async (req, res) => {
 
 // GET
 
-router.get("/:groupName", async (req, res) => {
+router.get("/:groupId", async (req, res) => {
   try {
     const allMessages = await GroupMessage.find({
-      groupName: req.params.groupName,
+      groupId: req.params.groupId,
     });
 
-    const messages = allMessages.map((message) => {
-      const { shareWith, ...msg } = message._doc;
-      return msg;
-    });
+    if (allMessages.length > 0) {
+      const messages = allMessages.map((oneMessage) => {
+        const { message, ...msg } = oneMessage._doc;
+        const bytesMessage = (bytes = CryptoJS.AES.decrypt(
+          message,
+          process.env.MESSAGE_SECRET_KEY
+        ));
+        const originalMessage = bytesMessage.toString(CryptoJS.enc.Utf8);
 
-    res.status(200).json(messages);
+        return { ...msg, message: originalMessage };
+      });
+
+      res.status(200).json(messages);
+    } else {
+      res.status(200).json([
+        {
+          sender: "admin",
+          message: "Nomessages found!",
+          createdAt: Date.now(),
+        },
+      ]);
+    }
   } catch (err) {
     res.status(500).json(err);
   }

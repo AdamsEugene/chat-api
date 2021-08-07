@@ -10,7 +10,7 @@ router.post("/", async (req, res) => {
   if (req.file) {
     const base64Img = await imageToBase64(req.file.path);
 
-    imageFile = {
+    imageFile = { 
       contentType: req.file.mimetype,
       path: req.file.path,
       image: base64Img,

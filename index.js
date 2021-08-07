@@ -19,7 +19,7 @@ const groupMessageRouter = require("./router/groupMessages");
 const settingRouter = require("./router/settings");
 
 dbConnect(process.env.DB_URI_LOCAL);
-   
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -38,7 +38,7 @@ const PORT = process.env.PORT || 9000;
 
 app.use("/api/auth", upload.single("image"), authRouter);
 app.use("/api/users", upload.single("image"), verify, userRouter);
-app.use("/api/groups", verify, groupRouter); 
+app.use("/api/groups", upload.single("groupPics"), verify, groupRouter);
 app.use("/api/activeUsers", verify, activeUserRouter);
 app.use("/api/messages", verify, messageRouter);
 app.use("/api/groupMessages", verify, groupMessageRouter);

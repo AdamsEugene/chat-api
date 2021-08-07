@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const imageToBase64 = require("image-to-base64");
 
 const User = require("../models/User");
 const Group = require("../models/Group");
@@ -6,9 +7,25 @@ const Group = require("../models/Group");
 // POST
 
 router.post("/", async (req, res) => {
-  console.log(req.body)
+  console.log(req.file);
+  let imageFile;
+  if (req.file) {
+    const base64Img = await imageToBase64(req.file.path);
+
+    imageFile = {
+      contentType: req.file.mimetype,
+      path: req.file.path,
+      image: base64Img,
+    };
+  }
   try {
-    const newGroup = new Group(req.body);
+    const newGroup = new Group({
+      name: req.body.name,
+      dics: req.body.dics,
+      members: req.body.members,
+      groupPics: imageFile,
+      admins: req.body.admins,
+    });
 
     const group = await newGroup.save();
     res.status(200).json(group);
@@ -109,16 +126,23 @@ router.get("/get/all", async (_req, res) => {
         const { members, ...doc } = group._doc;
         return doc;
       });
-      res.status(200).json(groups);
+      res
+        .status(200)
+        .json([
+          ...groups,
+          { name: "No Name", dics: "No group found", groupPics: null },
+        ]);
     } else {
-      res.status(200).json([{ name: "No Name", dics: "No group found" }]);
+      res
+        .status(200)
+        .json([{ name: "No Name", dics: "No group found", groupPics: null }]);
     }
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
-router.get("/get/members/:id", async (req, res) => {
+router.get("/members/:id", async (req, res) => {
   try {
     const group = await Group.findById(req.params.id);
     const members = await Promise.all(
@@ -126,7 +150,7 @@ router.get("/get/members/:id", async (req, res) => {
         const user = await User.findById(member);
         if (user) {
           const { password, ...doc } = user._doc;
-          return doc;
+          return { ...doc, gId: req.params.id };
         }
       })
     );

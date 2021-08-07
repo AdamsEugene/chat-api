@@ -3,13 +3,12 @@ const mongoose = require("mongoose");
 const groupMessageSchema = mongoose.Schema(
   {
     sender: { type: String, required: true },
-    groupName: { type: String, required: true },
+    groupId: { type: String, required: true },
     message: { type: String, required: true },
     shareWith: { type: Array, default: [] },
-    seen: { type: Boolean, default: false },
-    deleteFromMe: { type: Boolean, default: false },
+    createdAt: { type: Date },
+    deleteFromMe: { type: Object, default: { sender: false, receiver: false } },
     deleteFromAll: { type: Boolean, default: false },
-    createdAt: { type: Date, default: Date.now },
   },
   { timestamp: true }
 );

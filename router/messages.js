@@ -16,6 +16,7 @@ router.post("/", async (req, res) => {
         sender: req.body.sender,
         receiver: req.body.receiver,
         message: ciphertext,
+        createdAt: req.body.createdAt,
       });
 
       await newMessage.save();
