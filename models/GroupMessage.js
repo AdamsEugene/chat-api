@@ -6,6 +6,7 @@ const groupMessageSchema = mongoose.Schema(
     groupId: { type: String, required: true },
     message: { type: String, required: true },
     shareWith: { type: Array, default: [] },
+    seen: { type: Boolean, default: true },
     createdAt: { type: Date },
     deleteFromMe: { type: Object, default: { sender: false, receiver: false } },
     deleteFromAll: { type: Boolean, default: false },
