@@ -17,6 +17,7 @@ router.post("/", async (req, res) => {
         groupId: req.body.groupId,
         message: ciphertext,
         createdAt: req.body.createdAt,
+        name: req.body.name,
       });
 
       const message = await newMessage.save();

@@ -18,7 +18,7 @@ const messageRouter = require("./router/messages");
 const groupMessageRouter = require("./router/groupMessages");
 const settingRouter = require("./router/settings");
 
-dbConnect(process.env.DB_URI_LOCAL);
+dbConnect(process.env.DB_URI);
 
 const app = express();
 app.use(cors());
@@ -35,6 +35,8 @@ const upload = multer({
   //   fileFilter: setting,
 });
 const PORT = process.env.PORT || 9000;
+
+app.get("/", (req, res) => res.send("api running"));
 
 app.use("/api/auth", upload.single("image"), authRouter);
 app.use("/api/users", upload.single("image"), verify, userRouter);

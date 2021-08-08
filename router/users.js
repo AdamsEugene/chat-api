@@ -237,7 +237,8 @@ router.get("/all", async (req, res) => {
           const { password, ...doc } = user._doc;
           await allUsers.push(doc);
         });
-      res.status(200).json(allUsers);
+      allUsers.length === 0 && res.status(200).json([{}]);
+      allUsers.length > 0 && res.status(200).json(allUsers);
     });
   } catch (err) {
     res.status(500).json(err);
@@ -254,7 +255,8 @@ router.get("/friends", async (req, res) => {
         return doc;
       })
     );
-    res.status(200).json(friends);
+    friends.length === 0 && res.status(200).json([{}]);
+    friends.length > 0 && res.status(200).json(friends);
   } catch (err) {
     res.status(500).json(err);
   }

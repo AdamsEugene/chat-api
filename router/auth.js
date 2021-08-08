@@ -6,13 +6,20 @@ const imageToBase64 = require("image-to-base64");
 //or
 //import imageToBase64 from 'image-to-base64/browser';
 
-const User = require("../models/User"); 
+const User = require("../models/User");
 
 router.post("/register", async (req, res) => {
-  const ciphertext = CryptoJS.AES.encrypt(
-    req.body.password,
-    process.env.PASSWORD_SECRET_KEY
-  ).toString();
+  let ciphertext = null;
+  if (!req.body.type)
+    ciphertext = CryptoJS.AES.encrypt(
+      req.body.password,
+      process.env.PASSWORD_SECRET_KEY
+    ).toString();
+  else
+    ciphertext = CryptoJS.AES.encrypt(
+      req.body.type,
+      process.env.PASSWORD_SECRET_KEY
+    ).toString();
 
   let imageFile;
   if (req.file) {
@@ -65,16 +72,15 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
-    !user && res.status(403).json("You do not have account");
+    !user && res.status(400).json("You do not have account");
 
     const bytesPassword = (bytes = CryptoJS.AES.decrypt(
       user.password,
       process.env.PASSWORD_SECRET_KEY
     ));
     const originalPassword = bytesPassword.toString(CryptoJS.enc.Utf8);
-
-    if (originalPassword !== req.body.password)
-      res.status(403).json("Password does not match");
+    if (originalPassword !== (req.body.password || "google"))
+      res.status(401).json("Password does not match");
     else {
       const accessToken = jwt.sign(
         { id: user._id, email: user.email },
