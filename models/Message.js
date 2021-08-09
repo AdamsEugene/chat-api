@@ -4,7 +4,7 @@ const messageSchema = mongoose.Schema(
   {
     sender: { type: String, required: true },
     receiver: { type: String, required: true },
-    message: { type: String, required: true },
+    message: { type: Object, required: true },
     shareWith: { type: Array, default: [] },
     seen: { type: Boolean, default: false },
     deleteFromMe: { type: Object, default: { sender: false, receiver: false } }, 

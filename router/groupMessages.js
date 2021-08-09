@@ -6,8 +6,10 @@ const GroupMessage = require("../models/GroupMessage");
 // POST
 
 router.post("/", async (req, res) => {
+  // console.log(req.body)
   if (req.body.sender === req.user.id) {
     const ciphertext = encrypt(req.body.message);
+    // console.log(ciphertext)
     try {
       const newMessage = await new GroupMessage({
         sender: req.body.sender,
