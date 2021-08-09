@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const CryptoJS = require("crypto-JS");
+const { encrypt, decrypt } = require("../configs/crypto");
 const jwt = require("jsonwebtoken");
 
 const imageToBase64 = require("image-to-base64");
@@ -10,16 +10,8 @@ const User = require("../models/User");
 
 router.post("/register", async (req, res) => {
   let ciphertext = null;
-  if (!req.body.type)
-    ciphertext = CryptoJS.AES.encrypt(
-      req.body.password,
-      process.env.PASSWORD_SECRET_KEY
-    ).toString();
-  else
-    ciphertext = CryptoJS.AES.encrypt(
-      req.body.type,
-      process.env.PASSWORD_SECRET_KEY
-    ).toString();
+  if (!req.body.type) ciphertext = encrypt(req.body.password);
+  else ciphertext = encrypt(req.body.type);
 
   let imageFile;
   if (req.file) {
@@ -74,11 +66,7 @@ router.post("/login", async (req, res) => {
     const user = await User.findOne({ email: req.body.email });
     !user && res.status(400).json("You do not have account");
 
-    const bytesPassword = (bytes = CryptoJS.AES.decrypt(
-      user.password,
-      process.env.PASSWORD_SECRET_KEY
-    ));
-    const originalPassword = bytesPassword.toString(CryptoJS.enc.Utf8);
+    const originalPassword = decrypt(user.password);
     if (originalPassword !== (req.body.password || "google"))
       res.status(401).json("Password does not match");
     else {

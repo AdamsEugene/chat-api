@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const CryptoJS = require("crypto-JS");
+const { encrypt, decrypt } = require("../configs/crypto");
 
 const GroupMessage = require("../models/GroupMessage");
 
@@ -7,10 +7,7 @@ const GroupMessage = require("../models/GroupMessage");
 
 router.post("/", async (req, res) => {
   if (req.body.sender === req.user.id) {
-    const ciphertext = CryptoJS.AES.encrypt(
-      req.body.message,
-      process.env.MESSAGE_SECRET_KEY
-    ).toString();
+    const ciphertext = encrypt(req.body.message);
     try {
       const newMessage = await new GroupMessage({
         sender: req.body.sender,
@@ -90,11 +87,8 @@ router.get("/:groupId", async (req, res) => {
     if (allMessages.length > 0) {
       const messages = allMessages.map((oneMessage) => {
         const { message, ...msg } = oneMessage._doc;
-        const bytesMessage = (bytes = CryptoJS.AES.decrypt(
-          message,
-          process.env.MESSAGE_SECRET_KEY
-        ));
-        const originalMessage = bytesMessage.toString(CryptoJS.enc.Utf8);
+
+        const originalMessage = decrypt(message);
 
         return { ...msg, message: originalMessage };
       });

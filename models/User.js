@@ -4,7 +4,7 @@ const userSchema = mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    password: { type: Object, required: true },
     adminTo: { type: Array, default: [] },
     friends: { type: Array, default: [] },
     groups: { type: Array, default: [] },

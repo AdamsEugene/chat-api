@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const CryptoJS = require("crypto-JS");
+const { encrypt, decrypt } = require("../configs/crypto");
 
 const Message = require("../models/Message");
 
@@ -7,10 +7,7 @@ const Message = require("../models/Message");
 
 router.post("/", async (req, res) => {
   if (req.body.sender === req.user.id) {
-    const ciphertext = CryptoJS.AES.encrypt(
-      req.body.message,
-      process.env.MESSAGE_SECRET_KEY
-    ).toString();
+    const ciphertext = encrypt(req.body.message);
     try {
       const newMessage = await new Message({
         sender: req.body.sender,
@@ -38,11 +35,7 @@ router.put("/seen/:messageId", async (req, res) => {
     if (message.receiver === req.user.id) {
       await message.updateOne({ $set: { seen: true } }, { new: true });
 
-      const bytesMessage = (bytes = CryptoJS.AES.decrypt(
-        message.message,
-        process.env.MESSAGE_SECRET_KEY
-      ));
-      const originalMessage = bytesMessage.toString(CryptoJS.enc.Utf8);
+      const originalMessage = decrypt(message.message);
 
       res
         .status(200)
@@ -69,11 +62,7 @@ router.put("/delme/:id", async (req, res) => {
         { new: true }
       );
 
-      const bytesMessage = (bytes = CryptoJS.AES.decrypt(
-        message.message,
-        process.env.MESSAGE_SECRET_KEY
-      ));
-      const originalMessage = bytesMessage.toString(CryptoJS.enc.Utf8);
+      const originalMessage = decrypt(message.message);
 
       res.status(200).json({
         ...message._doc,
@@ -141,11 +130,8 @@ router.get("/", async (req, res) => {
     if (allMessages.length > 0) {
       const messages = allMessages.map((oneMessage) => {
         const { message, ...msg } = oneMessage._doc;
-        const bytesMessage = (bytes = CryptoJS.AES.decrypt(
-          message,
-          process.env.MESSAGE_SECRET_KEY
-        ));
-        const originalMessage = bytesMessage.toString(CryptoJS.enc.Utf8);
+
+        const originalMessage = decrypt(message.message);
 
         return { ...msg, message: originalMessage };
       });

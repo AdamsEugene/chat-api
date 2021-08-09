@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const CryptoJS = require("crypto-JS");
+const { encrypt } = require("../configs/crypto");
 const jwt = require("jsonwebtoken");
 const imageToBase64 = require("image-to-base64");
 
@@ -11,10 +11,7 @@ const Group = require("../models/Group");
 router.put("/:userId", async (req, res) => {
   if (req.user.id === req.params.userId) {
     if (req.body.password) {
-      req.body.password = CryptoJS.AES.encrypt(
-        req.body.password,
-        process.env.PASSWORD_SECRET_KEY
-      ).toString();
+      req.body.password = encrypt(req.body.password);
     }
 
     try {
