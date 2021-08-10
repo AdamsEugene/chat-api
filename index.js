@@ -36,7 +36,7 @@ const upload = multer({
 });
 const PORT = process.env.PORT || 9000;
 
-app.get("/", (req, res) => res.send("api running..."));
+app.get("/", (req, res) => res.send("api running... ..."));
 
 app.use("/api/auth", upload.single("image"), authRouter);
 app.use("/api/users", upload.single("image"), verify, userRouter);
